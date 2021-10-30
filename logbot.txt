@@ -1,1 +1,2 @@
-DB ERROR :'RootLogger' object has no attribute 'strip'DB ERROR :'RootLogger' object has no attribute 'strip'DATABASE ERROR : 2003: Can't connect to MySQL server on 'localhost:3306' (111 Connection refused)
+DB CONN NOT CREATED ERROR : 1044 (42000): Access denied for user ''@'localhost' to database 'bot'
+DB CONN NOT CREATED ERROR : 1044 (42000): Access denied for user ''@'localhost' to database 'bot'
