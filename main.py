@@ -17,21 +17,25 @@ class User:
         self.nama = None
         self.alamat = None
 
+class Pembayaran:
+    def __init__(self):
+        self.id_pembayaran = None
+        self.jumlah = None
+        self.foto = None
+
+
+
 @bot.message_handler(commands=['daftar'])
 def send_welcome(message):
     chat_id = int(message.chat.id)
-    cursor = create_cursor()
     try:
-        cursor.execute(f"SELECT tele_id FROM user WHERE tele_id={chat_id}")
-        data = cursor.fetchone()
-        if data != None:
+        if checkuser(chat_id):
             bot.reply_to(message,"Anda sudah terdaftar")
         else:
             msg = bot.reply_to(message, """\
         Silahkan jawab pertanyaan sesuai data diri.\nNama:
         """)
             bot.register_next_step_handler(msg, nama)
-        cursor.close()
     except Exception as e:
         logfunc("cursor error", e)
         
@@ -96,7 +100,7 @@ def product_list(message):
         chat_id = message.chat.id
         cursor = create_cursor()
         cursor.execute("SELECT * FROM barang")
-        barang = sql.fetchall()
+        barang = cursor.fetchall()
         for x in barang:
             id_barang,nama,harga,stock,gambar=x
             pesan = f"ID barang : {id_barang}\nNama Barang : {nama}\nHarga Barang : Rp. {harga}\nKetersediaan barang: {stock}"
@@ -125,8 +129,36 @@ def orderlist(message):
         else:
             bot.send_message(tele_id,"belum melakukan pesanan")
     except Exception as e:
-        bot.send_message(chat_id, 'terjadi error silahkan lakukan perintah kembali')
+        bot.send_message(tele_id, 'terjadi error silahkan lakukan perintah kembali')
     cursor.close()
+
+@bot.message_handler(commands=['pembayaran'])
+def pembayaran(message):
+    tele_id = message.chat.id
+    msg = bot.reply_to(message, """\
+        Silahkan kirim foto bukti pembayarn.
+            """)
+    bot.register_next_step_handler(msg, foto)
+
+def foto(message):
+    tele_id = message.chat.id
+    fileID = message.photo[-1].file_id
+    fileInfo = bot.get_file(fileID)
+    downloaded_file = bot.download_file(fileInfo.file_path)
+    id_pemabayaram = 1231654
+    jumlah = 100000
+    val = (id_pemabayaram,jumlah,downloaded_file)
+    sql_insert_blob_query = """ INSERT INTO pembayaran
+                      (id_pembayaran,jumlah,foto) VALUES (%s,%s,%s)"""
+    cursor = create_cursor()
+    cursor.execute(sql_insert_blob_query,val)
+    bot.send_message(tele_id,"Data telah terinput")
+
+
+
+
+
+
 
 print("bot berlari")
 bot.infinity_polling()

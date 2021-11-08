@@ -5,3 +5,6 @@ __pycache__/lib.pypy37.pyc
 .env
 logbot.txt
 logbot.*
+test_lib_nooop.py
+test_lib.py
+__pycache__/*

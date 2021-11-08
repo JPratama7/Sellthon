@@ -44,18 +44,6 @@ def checkuser(telegramid):
     cursor.close()
 
 
-def checkbarang(idbarang):
-    cursor = create_cursor()
-    barang_id = int(idbarang)
-    cursor.execute(f"SELECT COUNT(*) FROM barang WHERE id_barang = {barang_id}")
-    barang = cursor.fetchone()
-    if barang[0] != 0:
-        return True
-    else:
-        return False
-    curses.close()
-
-
 def idorder(idbarang, idorang):
     now = datetime.datetime.now()
     seq = now.strftime("%Y%m%d%H%M")
@@ -63,14 +51,3 @@ def idorder(idbarang, idorang):
     stridbarang = str(idbarang)
     idorder = int(seq + stridorang + stridbarang)
     return idorder
-
-
-def isadmin(idtelegram):
-    cursor = create_cursor()
-    cursor.execute("SELECT COUNT(*) FROM admin WHERE tele_id ='%s'" % (idtelegram))
-    admin = cursor.fetchone()
-    if admin[0] != 0:
-        return True
-    else:
-        return False
-    curses.close()
