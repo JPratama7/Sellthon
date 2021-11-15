@@ -2,26 +2,27 @@ import os
 
 from telebot import TeleBot
 from telebot import types
-from dotenv import load_dotenv
 from lib import *
+from dotenv import load_dotenv
+from dataclasses import dataclass
 # Global Variable
-load_dotenv(".env")
-TOKEN = os.getenv("API")
-bot = TeleBot(TOKEN)
+
+load_dotenv()
+API_TOKEN = os.getenv('API')
+bot = TeleBot(API_TOKEN)
 
 user_dict = {}
 
+
 class User:
-    def __init__(self, teleg_id):
-        self.teleg_id = int(teleg_id)
-        self.nama = None
-        self.alamat = None
+    teleg_id = int
+    nama = None
+    alamat = None
 
 class Pembayaran:
-    def __init__(self):
-        self.id_pembayaran = None
-        self.jumlah = None
-        self.foto = None
+    id_pembayaran = None
+    jumlah = None
+    foto = None
 
 
 

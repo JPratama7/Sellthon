@@ -1,18 +1,29 @@
 import telebot
 from telebot import types
-import sys
+from dataclasses import dataclass, astuple
+import os
+from dotenv import load_dotenv
 
-API_TOKEN = '1757350571:AAFzg3sDUpYgngjRPjzK78OI3XYtlGvQD0U'
+load_dotenv()
+
+API_TOKEN = os.getenv('API')
 
 bot = telebot.TeleBot(API_TOKEN)
 
 user_dict = {}
 
+@dataclass
 class User:
-    def __init__(self, name):
-        self.name = name
-        self.age = None
-        self.sex = None
+    name = str
+    age = int
+    sex = str
+
+    def getastuple(self):
+        name = self.name
+        age = self.age
+        sex = self.sex
+        result = (name,age,sex)
+        return result
 
 # Handle '/start' and '/help'
 # @bot.message_handler(commands=['help', 'start'])
@@ -29,7 +40,8 @@ def process_name_step(message):
     try:
         chat_id = message.chat.id
         name = message.text
-        user = User(name)
+        user = User()
+        user.name = name
         user_dict[chat_id] = user
         msg = bot.reply_to(message, 'How old are you?')
         bot.register_next_step_handler(msg, process_age_step)
@@ -89,9 +101,9 @@ class Test_handler:
         try:
             chat_id = message.chat.id
             name = message.text
-            user = User(name)
+            user = User()
+            user.name = name
             user_dict[chat_id] = user
-            print(user_dict)
             msg = bot.reply_to(message, 'How old are you?')
             bot.register_next_step_handler(msg, self.process_age_step)
         except Exception as e:
@@ -106,13 +118,13 @@ class Test_handler:
             if not age.isdigit():
                 msg = bot.reply_to(message, 'Age should be a number. How old are you?')
                 bot.register_next_step_handler(msg, self.process_age_step)
-            print(user_dict)
-            user = user_dict[chat_id]
-            user.age = age
-            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-            markup.add('Male', 'Female')
-            msg = bot.reply_to(message, 'What is your gender', reply_markup=markup)
-            bot.register_next_step_handler(msg, self.process_sex_step)
+            else:
+                user = user_dict[chat_id]
+                user.age = age
+                markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+                markup.add('Male', 'Female')
+                msg = bot.reply_to(message, 'What is your gender', reply_markup=markup)
+                bot.register_next_step_handler(msg, self.process_sex_step)
         except Exception as e:
             print(e)
             bot.reply_to(message, 'oooops')
@@ -122,7 +134,6 @@ class Test_handler:
         try:
             chat_id = message.chat.id
             sex = message.text
-            print(user_dict)
             user = user_dict[chat_id]
             if (sex == u'Male') or (sex == u'Female'):
                 user.sex = sex
@@ -130,7 +141,9 @@ class Test_handler:
                 raise Exception("Unknown sex")
             bot.send_message(chat_id, 'Nice to meet you ' + user.name + '\n Age:' + str(user.age) + '\n Sex:' + user.sex)
             # Clearing user_dict
-            user_dict.clear()
+            print(user.getastuple())
+            del user_dict[chat_id]
+            print(user_dict)
         except Exception as e:
             print(e)
             bot.reply_to(message, 'oooops')
