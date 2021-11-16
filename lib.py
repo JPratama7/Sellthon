@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 from os.path import join, dirname
 
 
-load_dotenv(find_dotenv())
+load_dotenv()
 
 def logfunc(type, e):
     type = str(type).upper()
@@ -37,11 +37,11 @@ def checkuser(telegramid):
     cursor = create_cursor()
     cursor.execute(f"SELECT COUNT(*) FROM user WHERE tele_id ={telegramid}")
     user = cursor.fetchone()
+    cursor.close()
     if user[0] != 0:
         return True
     else:
         return False
-    cursor.close()
 
 
 def idorder(idbarang, idorang):

@@ -13,86 +13,83 @@ bot = TeleBot(API_TOKEN)
 
 user_dict = {}
 
-
+@dataclass
 class User:
     teleg_id = int
-    nama = None
-    alamat = None
+    nama = str
+    alamat = str
 
+@dataclass()
 class Pembayaran:
-    id_pembayaran = None
-    jumlah = None
-    foto = None
+    id_pembayaran = int
+    jumlah = int
+    foto = any
 
+class Daftar:
+    def first_step(self,message):
+        chat_id = int(message.chat.id)
+        try:
+            if checkuser(chat_id):
+                bot.reply_to(message, "Anda sudah terdaftar")
+            else:
+                msg = bot.reply_to(message, """\
+            Silahkan jawab pertanyaan sesuai data diri.\nNama:
+            """)
+                bot.register_next_step_handler(msg, self.nama)
+        except Exception as e:
+            logfunc("cursor error", e)
 
+    def nama(self,message):
+        try:
+            chat_id = message.chat.id
+            nama = message.text
+            user = User()
+            user_dict[chat_id] = user
+            user.nama = nama
+            msg = bot.reply_to(message, 'Alamat:')
+            bot.register_next_step_handler(msg, self.alamat)
+        except Exception as e:
+            logfunc('nama', e)
+            bot.reply_to(message, 'oooops terjadi error silahkan lapor ke admin')
 
-@bot.message_handler(commands=['daftar'])
-def send_welcome(message):
-    chat_id = int(message.chat.id)
-    try:
-        if checkuser(chat_id):
-            bot.reply_to(message,"Anda sudah terdaftar")
-        else:
-            msg = bot.reply_to(message, """\
-        Silahkan jawab pertanyaan sesuai data diri.\nNama:
-        """)
-            bot.register_next_step_handler(msg, nama)
-    except Exception as e:
-        logfunc("cursor error", e)
-        
+    def alamat(self,message):
+        try:
+            chat_id = message.chat.id
+            alamat = message.text
+            user = user_dict[chat_id]
+            user.alamat = alamat
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+            markup.add('ya', 'tidak')
+            msg = bot.reply_to(message, f'Nama: {user.nama}\nAlamat : {user.alamat}', reply_markup=markup)
+            bot.register_next_step_handler(msg, self.commit_to_database)
+        except Exception as e:
+            logfunc('alamat', e)
+            bot.reply_to(message, 'oooops terjadi error silahkan lapor ke admin terjadi error silahkan lapor ke admin')
 
-def nama(message):
-    try:
-        chat_id = message.chat.id
-        nama = message.text
-        user = User(chat_id)
-        user_dict[chat_id] = user
-        user.nama = nama
-        msg = bot.reply_to(message, 'Alamat?')
-        bot.register_next_step_handler(msg, alamat)
-    except Exception as e:
-        logfunc('nama',e)
-        bot.reply_to(message, 'oooops terjadi error silahkan lapor ke admin')
+    def commit_to_database(self,message):
+        try:
+            chat_id = message.chat.id
+            keputusan = message.text
+            user = user_dict[chat_id]
+            cursor = create_cursor()
+            if (keputusan == u'ya'):
+                insert = "INSERT INTO user (tele_id,nama,alamat) VALUES (%s,%s,%s)"
+                val = (user.teleg_id, user.nama, user.alamat)
+                try:
+                    cursor.execute(insert, val)
+                    bot.send_message(chat_id, "ok data sudah terinput")
+                except Exception as e:
+                    bot.send_message(chat_id, "terjadi error silahkan ulang kembali")
+                    logfunc('commit database', e)
+            else:
+                bot.send_message(chat_id, "Silahkan tekan -> /daftar untuk melakukan pendaftaran ulang")
+            # remove used object at user_dict
+            del user_dict[chat_id]
+            cursor.close()
+        except Exception as e:
+            logfunc('commit database', e)
+            bot.reply_to(message, 'oooops terjadi error silahkan lapor ke admin terjadi error silahkan lapor ke admin')
 
-
-def alamat(message):
-    try:
-        chat_id = message.chat.id
-        alamat = message.text
-        user = user_dict[chat_id]
-        user.alamat = alamat
-        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        markup.add('ya', 'tidak')
-        msg = bot.reply_to(message, f'Nama: {user.nama}\nAlamat : {user.alamat}', reply_markup=markup)
-        bot.register_next_step_handler(msg, commit_to_database)
-    except Exception as e:
-        logfunc('alamat',e)
-        bot.reply_to(message, 'oooops terjadi error silahkan lapor ke admin terjadi error silahkan lapor ke admin')
-
-
-def commit_to_database(message):
-    try:
-        chat_id = message.chat.id
-        keputusan = message.text
-        user = user_dict[chat_id]
-        cursor = create_cursor()
-        if (keputusan == u'ya'):
-            insert = "INSERT INTO user (tele_id,nama,alamat) VALUES (%s,%s,%s)"
-            val = (user.teleg_id,user.nama,user.alamat)
-            try:
-                cursor.execute(insert,val)
-                bot.send_message(chat_id,"ok data sudah terinput")
-            except Exception as e:
-                bot.send_message(chat_id,"terjadi error silahkan ulang kembali")
-                logfunc('commit database', e)
-        else:
-            bot.send_message(chat_id, "Silahkan tekan -> /daftar untuk melakukan pendaftaran ulang")
-        # remove used object at user_dict
-        del user_dict[chat_id]
-    except Exception as e:
-        logfunc('commit database',e)
-        bot.reply_to(message, 'oooops terjadi error silahkan lapor ke admin terjadi error silahkan lapor ke admin')
-    cursor.close()
 
 #Handler Perintah list
 @bot.message_handler(commands=["list"])
@@ -157,9 +154,9 @@ def foto(message):
 
 
 
+daftar = Daftar()
 
-
-
+bot.register_message_handler(daftar.first_step, commands=["daftar"])
 
 print("bot berlari")
 bot.infinity_polling()
