@@ -44,6 +44,7 @@ class Daftar:
             chat_id = message.chat.id
             nama = message.text
             user = User()
+            user.teleg_id = chat_id
             user_dict[chat_id] = user
             user.nama = nama
             msg = bot.reply_to(message, 'Alamat:')

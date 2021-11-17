@@ -20,3 +20,5 @@ DB CONN NOT CREATED ERROR : 1044 (42000): Access denied for user ''@'localhost' 
 CURSOR NOT CREATED ERROR : 'NoneType' object has no attribute 'cursor'
 CURSOR ERROR ERROR : name 'cursor' is not defined
 NAMA ERROR : __init__() takes 1 positional argument but 2 were given
+COMMIT DATABASE ERROR : Failed processing format-parameters; Python 'type' cannot be converted to a MySQL type
+NAMA ERROR : __init__() takes 1 positional argument but 4 were given
