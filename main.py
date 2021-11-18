@@ -15,13 +15,14 @@ user_dict = {}
 
 @dataclass
 class User:
-    teleg_id = int
+    tele_id = int
     nama = str
     alamat = str
 
-@dataclass()
+@dataclass
 class Pembayaran:
     id_pembayaran = int
+    id_tele = int
     jumlah = int
     foto = any
 
